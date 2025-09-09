@@ -2058,6 +2058,9 @@ NvBool nvHdmiIsTmdsPossible(const NVDpyEvoRec *pDpyEvo,
             pDpyEvo->pDispEvo->pDevEvo->caps.hdmiTmds10BpcMaxPClkMHz * 1000UL;
         NvU32 adjustedMaxPixelClock =
             (pDpyEvo->maxSingleLinkPixelClockKHz * 4ULL) / 5ULL;
+        NvU32 adjustedMaxEDIDPixelClock =
+            pDpyEvo->parsedEdid.valid ?
+              (pDpyEvo->parsedEdid.limits.max_pclk_10khz * 10 * 4ULL) / 5ULL : 0;
 
         /* Pixel clock must satisfy hdmiTmds10BpcMaxPClkKHz, if applicable. */
         if ((hdmiTmds10BpcMaxPClkKHz > 0) &&
@@ -2067,6 +2070,12 @@ NvBool nvHdmiIsTmdsPossible(const NVDpyEvoRec *pDpyEvo,
 
         /* Pixel clock must also satisfy adjustedMaxPixelClock. */
         if (pixelClock > adjustedMaxPixelClock) {
+            return FALSE;
+        }
+
+        /* Pixel clock must also satisfy adjustedMaxEDIDPixelClock. */
+        if (adjustedMaxEDIDPixelClock != 0 &&
+            pixelClock > adjustedMaxEDIDPixelClock) {
             return FALSE;
         }
 
